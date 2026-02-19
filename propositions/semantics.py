@@ -73,21 +73,19 @@ def evaluate(formula: Formula, model: Model) -> bool:
     assert is_binary(formula.root)
     first_value = evaluate(formula.first, model)
     second_value = evaluate(formula.second, model)
-    if formula.root == '&':
-        return first_value and second_value
-    if formula.root == '|':
-        return first_value or second_value
-    if formula.root == '->':
-        return (not first_value) or second_value
-    if formula.root == '+':
-        return first_value != second_value
-    if formula.root == '<->':
-        return first_value == second_value
-    if formula.root == '-&':
-        return not (first_value and second_value)
-    if formula.root == '-|':
-        return not (first_value or second_value)
-    raise ValueError('Unknown operator: ' + formula.root)
+    binary_ops = {
+        '&': lambda a, b: a and b,
+        '|': lambda a, b: a or b,
+        '->': lambda a, b: (not a) or b,
+        '+': lambda a, b: a != b,
+        '<->': lambda a, b: a == b,
+        '-&': lambda a, b: not (a and b),
+        '-|': lambda a, b: not (a or b),
+    }
+    try:
+        return binary_ops[formula.root](first_value, second_value)
+    except KeyError:
+        raise ValueError('Unknown operator: ' + formula.root)
 
 def all_models(variables: Sequence[str]) -> Iterable[Model]:
     """Calculates all possible models over the given variable names.
